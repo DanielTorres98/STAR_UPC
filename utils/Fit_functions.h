@@ -1,8 +1,32 @@
 // Fitting functions
 
+#define PionPdgMass        0.139570
+#define ProtonPdgMass      0.938272
+#define KaonPdgMass        0.493677  //charged kaons, not K0s
+#define RhoPdgMass         0.770
+#define RhoLifeTime        0.148
+#define OmegaPdgMass       0.782
+#define OmegaLifeTime      0.017
+
 #include <TMath.h>
 #include <complex>
 #include <cmath>
+
+std::complex<double> pole_term(double q, double M, double Gamma) {
+    /**
+    * @brief Characteristic pole term of a particle's propagator.
+    * 
+    * @param q : momentum.
+    * @param M : Particle's mass.
+    * @param Gamma : Particle's decay rate.
+    * @return std::complex<double> 
+    */
+
+    double numerator = sqrt(q * M * Gamma);
+    std::complex<double> denominator(q * q - M * M, + Gamma * M);
+
+    return numerator/denominator;
+}
 
 double BW_rho_omega_photoproduction(const double *x, const double *par) {
     // Breit-Wigner function including rho and omega photoproduction
@@ -17,69 +41,43 @@ double BW_rho_omega_photoproduction(const double *x, const double *par) {
     double phi_omega = par[7];
     double M = x[0];
 
+    std::complex<double> rho_term = A_rho*pole_term(M, M_rho, Gamma_rho);
+    complex<double> exp_w(TMath::Cos(phi_omega), TMath::Sin(phi_omega));
+    std::complex<double> omega_term = C_omega*pole_term(M, M_omega, Gamma_omega)*exp_w;
 
-    double numerator_rho = A_rho * sqrt(M * M_rho * Gamma_rho);
-    std::complex<double> denominator_rho(M * M - M_rho * M_rho, + Gamma_rho * M_rho);
-    std::complex<double> rho_term  = numerator_rho/denominator_rho;
-
-
-    std::complex<double> numerator_omega(C_omega * sqrt(M * M_omega * Gamma_omega)*
-                                        TMath::Cos(phi_omega), TMath::Sin(phi_omega));
-    std::complex<double> denominator_omega(M * M - M_omega * M_omega, + Gamma_omega * M_omega);
-    std::complex<double> omega_term  = numerator_omega/denominator_omega;
-
-    double magnitude =  std::abs(rho_term + B_pp + omega_term);
-
-    return magnitude*magnitude;
+    return std::norm(rho_term+omega_term+B_pp);
 }
 
+// Breit-Wigner Function + Soding Term.
+//
+
+double Pole_term_squared(const double *x, const double *par) {
+    double A =  par[0];
+    double B = par[1];
+    double M_rho = par[2];
+    double Gamma_rho = par[3];
+
+    double M = x[0];
+    return std::norm(A*pole_term(M, M_rho, Gamma_rho));
+}
+
+double Interference_term(const double *x, const double *par) {
+    double A =  par[0];
+    double B = par[1];
+    double M_rho = par[2];
+    double Gamma_rho = par[3];
+
+    double M = x[0];
+    return 2*B*(A*pole_term(M, M_rho, Gamma_rho)).real();
+}
 
 double SodingEqn(const double *x, const double *par) {
     double A =  par[0];
     double B = par[1];
     double M_rho = par[2];
     double Gamma_rho = par[3];
-
-    double numerator = A * sqrt(x[0] * M_rho * Gamma_rho);
-    std::complex<double> denominator(x[0] * x[0] - M_rho * M_rho, + Gamma_rho * M_rho);
-    std::complex<double> denominatorCC(x[0] * x[0] - M_rho * M_rho, - Gamma_rho * M_rho);
-    
-    // Calculate the magnitude of the complex result
-    double magnitude = std::abs((numerator / denominator + B)*(numerator / denominatorCC + B));
-    
-    // Return the magnitude as a double
-    return magnitude;
-}
-
-double SodingEqn_addition_term(const double *x, const double *par) {
-    double A =  par[0];
-    double B = par[1];
-    double M_rho = par[2];
-    double Gamma_rho = par[3];
-
-    double numerator = A * sqrt(x[0] * M_rho * Gamma_rho);
-    std::complex<double> denominator(x[0] * x[0] - M_rho * M_rho, + Gamma_rho * M_rho);
-    std::complex<double> denominatorCC(x[0] * x[0] - M_rho * M_rho, - Gamma_rho * M_rho);
-
-    std::complex<double> Z(numerator/denominator);
-    std::complex<double> ZCC(numerator/denominatorCC);
-
-    return std::abs(Z*ZCC);
-}
-
-double SodingEqn_interference_term(const double *x, const double *par) {
-    double A =  par[0];
-    double B = par[1];
-    double M_rho = par[2];
-    double Gamma_rho = par[3];
-
-    double numerator = A * sqrt(x[0] * M_rho * Gamma_rho);
-    std::complex<double> denominator(x[0] * x[0] - M_rho * M_rho, + Gamma_rho * M_rho);
-    std::complex<double> denominatorCC(x[0] * x[0] - M_rho * M_rho, - Gamma_rho * M_rho);
-
-    std::complex<double> Z(numerator/denominator);
-    std::complex<double> ZCC(numerator/denominatorCC);
-    return B*(Z+ZCC).real();
+    double M = x[0];
+    return std::norm(A*pole_term(M, M_rho, Gamma_rho) + B);
 }
 
 double BW_Soding(const double *x, const double *par) {
@@ -112,5 +110,5 @@ double Ross_Stodolsky(const double *x, const double *par) {
 }
 
 Double_t Interference_phi_fit(Double_t* x, Double_t* par) {
-    return 1.0 - par[0] * cos(2.0 * x[0]);
+    return 1.0 - par[0] * TMath::Cos(2.0 * x[0]);
 }
