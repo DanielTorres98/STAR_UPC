@@ -108,3 +108,22 @@ void AddEmptyLegendEntry(TLegend *legend, const char *text = "", int color = 0) 
     dummy->SetLineWidth(0);
     dummy->SetMarkerSize(0);
 }
+
+void SetCanvasStyle(TCanvas* canvas) {
+    // Set ROOT style options
+    gStyle->SetOptStat(0);
+    gStyle->SetOptFit(0);
+    gStyle->SetLineWidth(2);
+
+    // Set canvas margins and frame properties
+    canvas->SetTopMargin(0.08);
+    canvas->SetBottomMargin(0.11);
+    canvas->SetLeftMargin(0.11);
+    canvas->SetRightMargin(0.05);
+    canvas->SetFrameLineWidth(2);
+
+    // Create and configure TLatex object
+    TLatex tl;
+    tl.SetTextSize(0.06);
+    tl.SetNDC();
+}

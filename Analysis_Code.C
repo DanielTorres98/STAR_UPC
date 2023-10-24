@@ -75,7 +75,7 @@ void Analysis_Code() {
     TH1F * hRhoMass_150_200 = new TH1F("hRhoMass_150_200", "#pi^{+} #pi^{-} pairs", 100, 0.6, 0.9);
     TH1F * hRhoMass_200_1000 = new TH1F("hRhoMass_200_1000", "#pi^{+} #pi^{-} pairs", 100, 0.6, 0.9);
     TH1F * hMpiMass_0_100MeV = new TH1F("hMpiMass_0_100MeV", "#pi^{+}#pi^{-} mass distribution p_{T} < 100 MeV",
-                                    static_cast<int>((1.1 - 0.44) / 0.0025), 0.5, 1.3);
+                                    static_cast<int>((1.3 - 0.5) / 0.0025), 0.5, 1.3);
 
     TH1F * hMpiMass_0_100MeV_v2 = new TH1F("hMpiMass_0_100MeV_v2", "#pi^{+}#pi^{-} mass distribution P_{T} < 100 MeV",
                                         100, 0.44, 1.1);
@@ -348,11 +348,6 @@ void Analysis_Code() {
     // Perform the second fit and set its line and marker color.
 
     normalizeHistogram(hphi);
-
-    // Create a TProfile to store the 1D projection of the mean value of Y for each bin in X
-    //
-    TProfile* profileX = hCos2phivsPT->ProfileX();
-    profileX->GetXaxis()->SetRangeUser(0, 0.23);
 
     OutputFile->Write();
     OutputFile->Close();

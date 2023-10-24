@@ -23,7 +23,7 @@ void Mass_distribution_fit(){
 
     TH1D* H1D_MpiMass_0_100MeV = (TH1D*) InputFile->Get("hMpiMass_0_100MeV");
     H1D_MpiMass_0_100MeV->Scale(1100.0); // Scale by luminosity 1100
-    H1D_MpiMass_0_100MeV->SetTitle("#pi^{+}#pi^{-} mass distribution p_{T} < 100 MeV");
+    H1D_MpiMass_0_100MeV->SetTitle("#pi^{+}#pi^{-} mass distribution p_{T} < 100 MeV/c^2");
     H1D_MpiMass_0_100MeV->GetYaxis()->SetRangeUser(-5, 25);
     H1D_MpiMass_0_100MeV->GetXaxis()->SetTitle("M_{#pi#pi} (GeV/c^{2})");
     H1D_MpiMass_0_100MeV->GetYaxis()->SetTitle("d#sigma/dM_{#pi#pi} [mb/(MeV/c^{2})]");
@@ -57,7 +57,9 @@ void Mass_distribution_fit(){
 
     TF1 *Soding_Param_term1 = new TF1("Soding_Param_term1", Pole_term_squared, 0.44, 1.3, 4);
     Soding_Param_term1->SetLineColor(kBlack); Soding_Param_term1->SetLineStyle(2);
-    Soding_Param_term1->SetParameters(fit_Soding_Params);
+    Soding_Param_term1->SetParameter(0, fit_Soding_Params[0]);
+    Soding_Param_term1->SetParameter(1, fit_Soding_Params[2]);
+    Soding_Param_term1->SetParameter(2, fit_Soding_Params[3]);
 
     TF1 *Soding_Param_term2 = new TF1("SodingEqn_addition_term", Interference_term, 0.44, 1.3, 4);
     Soding_Param_term2->SetLineColor(kBlack); Soding_Param_term2->SetLineStyle(3);
@@ -73,10 +75,10 @@ void Mass_distribution_fit(){
 
     // Set initial parameter values for A, B RhoMass, GammaRho respectively.
     BW_rho_omega_photoproduction_param->SetParameters(RhoPdgMass, RhoLifeTime, 1.0, 1.0, 1.0, OmegaPdgMass, OmegaLifeTime,
-                                                     0.0);
+                                                     1.0);
 
     // Perform the first fit and set its line and marker color
-    H1D_MpiMass_0_100MeV->Fit("BW_rho_omega_photoproduction_param", "ERS0", "", 0.6, 1);
+    H1D_MpiMass_0_100MeV->Fit("BW_rho_omega_photoproduction_param", "ERS0", "", 0.6, 1.3);
 
     // Perform the second fit and set its line and marker color
     // fitParams = (A, B, MRho, Gammarho)
@@ -90,15 +92,22 @@ void Mass_distribution_fit(){
 
     TF1 *BW_rho_omega_photoproduction_rho_pole_term = new TF1("BW_rho_omega_photoproduction_rho_pole_term", 
                                                               Pole_term_squared, 0.44, 1.3, 4);
-    BW_rho_omega_photoproduction_rho_pole_term->SetLineColor(kOrange);
+    BW_rho_omega_photoproduction_rho_pole_term->SetLineColor(kBlack);
     BW_rho_omega_photoproduction_rho_pole_term->SetLineStyle(1);
-    cout << BW_rho_omega_photoproduction_param_values[2] << endl;
-    cout << BW_rho_omega_photoproduction_param_values[0] << endl;
-    cout << BW_rho_omega_photoproduction_param_values[1] << endl;
     BW_rho_omega_photoproduction_rho_pole_term->SetParameter(0, BW_rho_omega_photoproduction_param_values[2]);
-    BW_rho_omega_photoproduction_rho_pole_term->SetParameter(1, 1);
-    BW_rho_omega_photoproduction_rho_pole_term->SetParameter(2, BW_rho_omega_photoproduction_param_values[0]);
-    BW_rho_omega_photoproduction_rho_pole_term->SetParameter(3, BW_rho_omega_photoproduction_param_values[1]);
+    BW_rho_omega_photoproduction_rho_pole_term->SetParameter(1, BW_rho_omega_photoproduction_param_values[0]);
+    BW_rho_omega_photoproduction_rho_pole_term->SetParameter(2, BW_rho_omega_photoproduction_param_values[1]);
+
+
+    double Branching_ratio_omega_2_pipi = 0.0153;
+    TF1 *BW_rho_omega_photoproduction_omega_pole_term = new TF1("BW_rho_omega_photoproduction_omega_pole_term", 
+                                                              Pole_term_squared, 0.44, 1.3, 4);
+    BW_rho_omega_photoproduction_omega_pole_term->SetLineColor(kCyan);
+    BW_rho_omega_photoproduction_omega_pole_term->SetLineStyle(1);
+    double A = Branching_ratio_omega_2_pipi;
+    BW_rho_omega_photoproduction_omega_pole_term->SetParameter(0, BW_rho_omega_photoproduction_param_values[4]);
+    BW_rho_omega_photoproduction_omega_pole_term->SetParameter(1, BW_rho_omega_photoproduction_param_values[5]);
+    BW_rho_omega_photoproduction_omega_pole_term->SetParameter(2, BW_rho_omega_photoproduction_param_values[6]*A);
 
     // TF1 *BW_rho_omega_photoproduction_fit = new TF1("BW_rho_omega_photoproduction_fit", BW_rho_omega_photoproduction, 0.44, 1.3, 8);
     // BW_rho_omega_photoproduction_fit->SetLineColor(kRed);
@@ -154,14 +163,18 @@ void Mass_distribution_fit(){
 
     BW_rho_omega_photoproduction_fit->Draw("Same");
 
+
+    BW_rho_omega_photoproduction_rho_pole_term->Draw("Same");
+
+    BW_rho_omega_photoproduction_omega_pole_term->Draw("Same");
+
     TLegend *legend2 = new TLegend(0.5, 0.6, 0.88, 0.8);
     legend2->AddEntry(H1D_MpiMass_0_100MeV, "Data points", "p");
-    legend2->AddEntry(BW_rho_omega_photoproduction_fit, "#rho-#omega Breit-Wigner fit", "l");
+    legend2->AddEntry(BW_rho_omega_photoproduction_fit, "#rho-#omega full fit", "l");
+    legend2->AddEntry(BW_rho_omega_photoproduction_rho_pole_term, "#rho BW fit", "l");
     legend2->SetBorderSize(0);
     legend2->SetTextSize(0.035);
     legend2->Draw();
-
-    // BW_rho_omega_photoproduction_rho_pole_term->Draw("Same");
     c3->SetLeftMargin(0.15); 
     c3->SaveAs("Images/Rho_omega_photoproduction.pdf");
     c3->SaveAs("Images/Rho_omega_photoproduction.png");
