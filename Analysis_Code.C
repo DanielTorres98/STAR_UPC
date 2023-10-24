@@ -62,7 +62,7 @@ void Analysis_Code() {
     //1D histogram. Defined by (name, title, #binsx, lower range x, upper range x)
     //
 
-    TH1F * hRhoMass = new TH1F("hRhoMass", "#rho mass distribution", 100, 0.44, 1.1);
+    TH1F * hRhoMass = new TH1F("hRhoMass", "#rho mass distribution", 0.8 / 0.0025, 0.5, 1.3);
     
     // Mass plots
     //
@@ -276,9 +276,14 @@ void Analysis_Code() {
                 if (RhoMomentum.Pt()>0.2 && RhoMomentum.Pt()<1){
                     hRhoMass_200_1000->Fill(RhoMass);
                 }
-                hRhoMass->Fill(RhoMass);
+                if (RhoMomentum.Pt() < 0.100 && std::abs(RhoMomentum.Rapidity())<1) {  
+                    hRhoMass->Fill(RhoMass);
+                }
                 if ((DeltaDeltaTOF < 0.750 && DeltaDeltaTOF > 0) && (NSigmaPion < 8)) {
-                    if (RhoMomentum.Pt()<0.100){
+                    if (RhoMomentum.Pt()<0.100 && std::abs(RhoMomentum.Rapidity())<1){
+                        count ++;
+                        SurvivingFraction ++;
+
                         hMpiMass_0_100MeV->Fill(RhoMass);
                         hMpiMass_0_100MeV_v2->Fill(RhoMass);
                         hMpiMass_0_100MeV_v3->Fill(RhoMass);
@@ -295,9 +300,6 @@ void Analysis_Code() {
                         if (RhoMomentum.Pt()*sinphi< 0){
                             phi = -1*phi;
                         }
-
-                        count ++;
-                        SurvivingFraction ++;
 
                         // 2D Histogram
                         //
@@ -333,7 +335,9 @@ void Analysis_Code() {
     cout << "Surviving Fraction of Events After Cuts" << endl;
     cout << SurvivingFraction/EventLimit << endl;
     hRhoMass_NoCut->Scale(1.0 / hRhoMass_NoCut->Integral());
-    hRhoMass->Scale(1.0 / hRhoMass->Integral());
+
+    double nEntries = hRhoMass->GetEntries();
+    hRhoMass->Scale(1/(1074600.0*(nEntries/EventLimit)));
     hRhoMass_0_20->Scale(1.0 / hRhoMass_0_20->Integral());
     hRhoMass_20_40->Scale(1.0 / hRhoMass_20_40->Integral());
     hRhoMass_40_60->Scale(1.0 / hRhoMass_40_60->Integral());
@@ -343,7 +347,8 @@ void Analysis_Code() {
     hRhoMass_150_200->Scale(1.0 / hRhoMass_150_200->Integral());
     hRhoMass_200_1000->Scale(1.0 / hRhoMass_200_1000->Integral());
 
-    normalizeHistogramProbability(hMpiMass_0_100MeV);
+    double nEntries_2 = hMpiMass_0_100MeV->GetEntries();
+    hMpiMass_0_100MeV->Scale(1/(1074600.0*(nEntries_2/EventLimit)));
 
     // Perform the second fit and set its line and marker color.
 

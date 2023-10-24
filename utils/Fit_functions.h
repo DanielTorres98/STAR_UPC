@@ -28,6 +28,15 @@ std::complex<double> pole_term(double q, double M, double Gamma) {
     return numerator/denominator;
 }
 
+double abs_pole_term(const double *x, const double *par) {
+    double A =  par[0];
+    double M_rho = par[1];
+    double Gamma_rho = par[2];
+
+    double M = x[0];
+    return A*std::abs(pole_term(M, M_rho, Gamma_rho));
+}
+
 double BW_rho_omega_photoproduction(const double *x, const double *par) {
     // Breit-Wigner function including rho and omega photoproduction
     //
@@ -44,7 +53,8 @@ double BW_rho_omega_photoproduction(const double *x, const double *par) {
 
     std::complex<double> rho_term = A_rho*pole_term(M, M_rho, Gamma_rho);
     complex<double> exp_w(TMath::Cos(phi_omega), TMath::Sin(phi_omega));
-    std::complex<double> omega_term = C_omega*pole_term(M, M_omega, Gamma_omega*Branching_ratio_omega_2_pipi)*exp_w;
+    std::complex<double> omega_term = C_omega*sqrt(Branching_ratio_omega_2_pipi)*
+                                      pole_term(M, M_omega, Gamma_omega)*exp_w;
 
     return std::norm(rho_term+omega_term+B_pp);
 }
@@ -69,6 +79,19 @@ double Interference_term(const double *x, const double *par) {
 
     double M = x[0];
     return 2*B*(A*pole_term(M, M_rho, Gamma_rho)).real();
+}
+
+double BW_Interference_term(const double *x, const double *par) {
+    double A =  par[0];
+    double M_rho = par[1];
+    double Gamma_rho = par[2];
+
+    double C =  par[3];
+    double M_omega = par[4];
+    double Gamma_omega = par[5];
+
+    double M = x[0];
+    return 2*(A*pole_term(M, M_rho, Gamma_rho)*C*std::conj(pole_term(M, M_omega, Gamma_omega))).real();
 }
 
 double SodingEqn(const double *x, const double *par) {

@@ -21,9 +21,9 @@ void Mass_distribution_fit(){
 
     TFile * InputFile = new TFile( "UpcOutput_Rho.root", "READ" );
 
-    TH1D* H1D_MpiMass_0_100MeV = (TH1D*) InputFile->Get("hMpiMass_0_100MeV");
-    H1D_MpiMass_0_100MeV->Scale(1100.0); // Scale by luminosity 1100
+    TH1D* H1D_MpiMass_0_100MeV = (TH1D*) InputFile->Get("hRhoMass");
     H1D_MpiMass_0_100MeV->SetTitle("#pi^{+}#pi^{-} mass distribution p_{T} < 100 MeV/c^2");
+    H1D_MpiMass_0_100MeV->Scale(500.0);
     H1D_MpiMass_0_100MeV->GetYaxis()->SetRangeUser(-5, 25);
     H1D_MpiMass_0_100MeV->GetXaxis()->SetTitle("M_{#pi#pi} (GeV/c^{2})");
     H1D_MpiMass_0_100MeV->GetYaxis()->SetTitle("d#sigma/dM_{#pi#pi} [mb/(MeV/c^{2})]");
@@ -74,11 +74,21 @@ void Mass_distribution_fit(){
                                                   "M_#omega", "#Gamma_#omega", "#phi_#omega");
 
     // Set initial parameter values for A, B RhoMass, GammaRho respectively.
-    BW_rho_omega_photoproduction_param->SetParameters(RhoPdgMass, RhoLifeTime, 1.0, 1.0, 1.0, OmegaPdgMass, OmegaLifeTime,
+    BW_rho_omega_photoproduction_param->SetParameters(RhoPdgMass, RhoLifeTime, 1.0, -1.0, 1, OmegaPdgMass, OmegaLifeTime,
                                                      1.0);
 
+    BW_rho_omega_photoproduction_param->SetParLimits(0, 0.6, 1);
+    BW_rho_omega_photoproduction_param->SetParLimits(0, 0, 0.4);
+    BW_rho_omega_photoproduction_param->SetParLimits(0, 0, 5);
+    BW_rho_omega_photoproduction_param->SetParLimits(0, -10, 0);
+    BW_rho_omega_photoproduction_param->SetParLimits(0, 0, 5);
+    BW_rho_omega_photoproduction_param->SetParLimits(0, 0.6, 1);
+    BW_rho_omega_photoproduction_param->SetParLimits(0, 0, 0.4);
+    BW_rho_omega_photoproduction_param->SetParLimits(0, -3.14, 3.14);
+
+
     // Perform the first fit and set its line and marker color
-    H1D_MpiMass_0_100MeV->Fit("BW_rho_omega_photoproduction_param", "ERS0", "", 0.6, 1.3);
+    H1D_MpiMass_0_100MeV->Fit("BW_rho_omega_photoproduction_param", "ERS0", "", 0.6, 1.1);
 
     // Perform the second fit and set its line and marker color
     // fitParams = (A, B, MRho, Gammarho)
@@ -86,13 +96,13 @@ void Mass_distribution_fit(){
     BW_rho_omega_photoproduction_param->GetParameters(BW_rho_omega_photoproduction_param_values);
 
     TF1 *BW_rho_omega_photoproduction_fit = new TF1("BW_rho_omega_photoproduction_fit", BW_rho_omega_photoproduction, 0.44, 1.3, 8);
-    BW_rho_omega_photoproduction_fit->SetLineColor(kRed);
+    BW_rho_omega_photoproduction_fit->SetLineColor(kBlack);
     BW_rho_omega_photoproduction_fit->SetLineStyle(1);
     BW_rho_omega_photoproduction_fit->SetParameters(BW_rho_omega_photoproduction_param_values);
 
     TF1 *BW_rho_omega_photoproduction_rho_pole_term = new TF1("BW_rho_omega_photoproduction_rho_pole_term", 
-                                                              Pole_term_squared, 0.44, 1.3, 4);
-    BW_rho_omega_photoproduction_rho_pole_term->SetLineColor(kBlack);
+                                                              Pole_term_squared, 0.44, 1.3, 3);
+    BW_rho_omega_photoproduction_rho_pole_term->SetLineColor(kRed);
     BW_rho_omega_photoproduction_rho_pole_term->SetLineStyle(1);
     BW_rho_omega_photoproduction_rho_pole_term->SetParameter(0, BW_rho_omega_photoproduction_param_values[2]);
     BW_rho_omega_photoproduction_rho_pole_term->SetParameter(1, BW_rho_omega_photoproduction_param_values[0]);
@@ -101,18 +111,53 @@ void Mass_distribution_fit(){
 
     double Branching_ratio_omega_2_pipi = 0.0153;
     TF1 *BW_rho_omega_photoproduction_omega_pole_term = new TF1("BW_rho_omega_photoproduction_omega_pole_term", 
-                                                              Pole_term_squared, 0.44, 1.3, 4);
+                                                              Pole_term_squared, 0.44, 1.3, 3);
     BW_rho_omega_photoproduction_omega_pole_term->SetLineColor(kCyan);
     BW_rho_omega_photoproduction_omega_pole_term->SetLineStyle(1);
-    double A = Branching_ratio_omega_2_pipi;
-    BW_rho_omega_photoproduction_omega_pole_term->SetParameter(0, BW_rho_omega_photoproduction_param_values[4]);
+    BW_rho_omega_photoproduction_omega_pole_term->SetParameter(0, BW_rho_omega_photoproduction_param_values[4]*
+                                                                  sqrt(Branching_ratio_omega_2_pipi));
     BW_rho_omega_photoproduction_omega_pole_term->SetParameter(1, BW_rho_omega_photoproduction_param_values[5]);
-    BW_rho_omega_photoproduction_omega_pole_term->SetParameter(2, BW_rho_omega_photoproduction_param_values[6]*A);
+    BW_rho_omega_photoproduction_omega_pole_term->SetParameter(2, BW_rho_omega_photoproduction_param_values[6]);
 
-    // TF1 *BW_rho_omega_photoproduction_fit = new TF1("BW_rho_omega_photoproduction_fit", BW_rho_omega_photoproduction, 0.44, 1.3, 8);
-    // BW_rho_omega_photoproduction_fit->SetLineColor(kRed);
-    // BW_rho_omega_photoproduction_fit->SetLineStyle(1);
-    // BW_rho_omega_photoproduction_fit->SetParameters(BW_rho_omega_photoproduction_fit);
+    TF1 *B_pipi_line = new TF1("B_pipi_line", "[0]", 0.44, 1.3);
+
+    B_pipi_line->SetParameter(0, BW_rho_omega_photoproduction_param_values[3]);
+    // Set line properties if needed (e.g., color, width...)ß
+    B_pipi_line->SetLineColor(kBlue);   // Set color of the line to blue
+    B_pipi_line->SetLineWidth(2);      // Set line width
+
+    // Multiply
+    TF1 *rho_interference_term = new TF1("rho_interference_term", Interference_term, 0.44, 1.3, 4);
+    rho_interference_term->SetLineStyle(1);
+    rho_interference_term->SetParameter(0, BW_rho_omega_photoproduction_param_values[2]);
+    rho_interference_term->SetParameter(1, BW_rho_omega_photoproduction_param_values[3]);
+    rho_interference_term->SetParameter(2, BW_rho_omega_photoproduction_param_values[0]);
+    rho_interference_term->SetParameter(3, BW_rho_omega_photoproduction_param_values[1]);
+    rho_interference_term->SetLineColor(kGreen);
+
+    TF1 *omega_interference_term = new TF1("omega_interference_term", Interference_term, 0.44, 1.3, 4);
+    omega_interference_term->SetLineColor(kBlack);
+    omega_interference_term->SetLineStyle(2);
+    omega_interference_term->SetParameter(0, BW_rho_omega_photoproduction_param_values[4]*
+                                             sqrt(Branching_ratio_omega_2_pipi));
+    omega_interference_term->SetParameter(1, BW_rho_omega_photoproduction_param_values[3]);
+    omega_interference_term->SetParameter(2, BW_rho_omega_photoproduction_param_values[0]);
+    omega_interference_term->SetParameter(3, BW_rho_omega_photoproduction_param_values[1]);
+    omega_interference_term->SetLineColor(kGreen);
+
+    TF1 *BW_interference_term = new TF1("BW_interference_term", BW_Interference_term, 0.44, 1.3, 6);
+    BW_interference_term->SetLineColor(kMagenta);
+    BW_interference_term->SetLineStyle(2);
+    BW_interference_term->SetParameter(0, BW_rho_omega_photoproduction_param_values[2]);
+    BW_interference_term->SetParameter(1, BW_rho_omega_photoproduction_param_values[0]);
+    BW_interference_term->SetParameter(2, BW_rho_omega_photoproduction_param_values[1]);
+    BW_interference_term->SetParameter(3, BW_rho_omega_photoproduction_param_values[4]*
+                                          sqrt(Branching_ratio_omega_2_pipi));
+    BW_interference_term->SetParameter(4, BW_rho_omega_photoproduction_param_values[5]);
+    BW_interference_term->SetParameter(5, BW_rho_omega_photoproduction_param_values[6]);
+
+
+
 
     // Canvas
     TCanvas *c1 = new TCanvas("c1", "c1", 800, 600);
@@ -160,18 +205,33 @@ void Mass_distribution_fit(){
     // Canvas
     TCanvas *c3 = new TCanvas("c3", "c3", 800, 600);
     H1D_MpiMass_0_100MeV->Draw("E1");
-
+    gStyle->SetOptFit(1111);
     BW_rho_omega_photoproduction_fit->Draw("Same");
-
 
     BW_rho_omega_photoproduction_rho_pole_term->Draw("Same");
 
     BW_rho_omega_photoproduction_omega_pole_term->Draw("Same");
 
+    B_pipi_line->Draw("Same");
+
+    rho_interference_term->Draw("Same");
+
+    omega_interference_term->Draw("Same");
+
+    rho_interference_term->Draw("Same");
+
+    BW_interference_term->Draw("Same");
+
     TLegend *legend2 = new TLegend(0.5, 0.6, 0.88, 0.8);
     legend2->AddEntry(H1D_MpiMass_0_100MeV, "Data points", "p");
     legend2->AddEntry(BW_rho_omega_photoproduction_fit, "#rho-#omega full fit", "l");
     legend2->AddEntry(BW_rho_omega_photoproduction_rho_pole_term, "#rho BW fit", "l");
+    legend2->AddEntry(BW_rho_omega_photoproduction_omega_pole_term, "#omega BW fit", "l");
+    legend2->AddEntry(B_pipi_line, "B_{#pi#pi}", "l");
+    legend2->AddEntry(rho_interference_term, "#rho interference #pi#pi", "l");
+    legend2->AddEntry(omega_interference_term, "#omega interference #pi#pi", "l");
+    legend2->AddEntry(BW_interference_term, "#omega-#rho interference #pi#pi", "l");
+
     legend2->SetBorderSize(0);
     legend2->SetTextSize(0.035);
     legend2->Draw();
