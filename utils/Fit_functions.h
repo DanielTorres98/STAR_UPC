@@ -39,11 +39,12 @@ double BW_rho_omega_photoproduction(const double *x, const double *par) {
     double M_omega = par[5];
     double Gamma_omega = par[6];
     double phi_omega = par[7];
+    double Branching_ratio_omega_2_pipi = 0.0153;
     double M = x[0];
 
     std::complex<double> rho_term = A_rho*pole_term(M, M_rho, Gamma_rho);
     complex<double> exp_w(TMath::Cos(phi_omega), TMath::Sin(phi_omega));
-    std::complex<double> omega_term = C_omega*pole_term(M, M_omega, Gamma_omega)*exp_w;
+    std::complex<double> omega_term = C_omega*pole_term(M, M_omega, Gamma_omega*Branching_ratio_omega_2_pipi)*exp_w;
 
     return std::norm(rho_term+omega_term+B_pp);
 }
@@ -53,9 +54,8 @@ double BW_rho_omega_photoproduction(const double *x, const double *par) {
 
 double Pole_term_squared(const double *x, const double *par) {
     double A =  par[0];
-    double B = par[1];
-    double M_rho = par[2];
-    double Gamma_rho = par[3];
+    double M_rho = par[1];
+    double Gamma_rho = par[2];
 
     double M = x[0];
     return std::norm(A*pole_term(M, M_rho, Gamma_rho));

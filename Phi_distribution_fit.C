@@ -9,7 +9,7 @@ void Phi_distribution_fit(){
     TFile * InputFile = new TFile( "UpcOutput_Rho.root", "READ" );
 
     TH1D* H1D_phi_0_60MeV = (TH1D*) InputFile->Get("hphi");
-    H1D_phi_0_60MeV->SetTitle("#phi, p_{T}<60 MeV");
+    H1D_phi_0_60MeV->SetTitle("#phi, p_{T}<60 (MeV/c^{2})");
     H1D_phi_0_60MeV->SetMarkerStyle(5);
     H1D_phi_0_60MeV->GetYaxis()->SetTitle("dN/d#phi (norm. to unity)");
     H1D_phi_0_60MeV->GetYaxis()->SetTitleSize(0.05);
