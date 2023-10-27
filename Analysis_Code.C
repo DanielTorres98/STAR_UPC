@@ -335,9 +335,6 @@ void Analysis_Code() {
     cout << "Surviving Fraction of Events After Cuts" << endl;
     cout << SurvivingFraction/EventLimit << endl;
     hRhoMass_NoCut->Scale(1.0 / hRhoMass_NoCut->Integral());
-
-    double nEntries = hRhoMass->GetEntries();
-    hRhoMass->Scale(1/(1074600.0*(nEntries/EventLimit)));
     hRhoMass_0_20->Scale(1.0 / hRhoMass_0_20->Integral());
     hRhoMass_20_40->Scale(1.0 / hRhoMass_20_40->Integral());
     hRhoMass_40_60->Scale(1.0 / hRhoMass_40_60->Integral());
@@ -346,9 +343,6 @@ void Analysis_Code() {
     hRhoMass_100_150->Scale(1.0 / hRhoMass_100_150->Integral());
     hRhoMass_150_200->Scale(1.0 / hRhoMass_150_200->Integral());
     hRhoMass_200_1000->Scale(1.0 / hRhoMass_200_1000->Integral());
-
-    double nEntries_2 = hMpiMass_0_100MeV->GetEntries();
-    hMpiMass_0_100MeV->Scale(1/(1074600.0*(nEntries_2/EventLimit)));
 
     // Perform the second fit and set its line and marker color.
 

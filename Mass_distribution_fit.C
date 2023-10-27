@@ -21,12 +21,13 @@ void Mass_distribution_fit(){
 
     TFile * InputFile = new TFile( "UpcOutput_Rho.root", "READ" );
 
-    TH1D* H1D_MpiMass_0_100MeV = (TH1D*) InputFile->Get("hRhoMass");
+    TH1D* H1D_MpiMass_0_100MeV = (TH1D*) InputFile->Get("hMpiMass_0_100MeV");
     H1D_MpiMass_0_100MeV->SetTitle("#pi^{+}#pi^{-} mass distribution p_{T} < 100 MeV/c^2");
-    H1D_MpiMass_0_100MeV->Scale(500.0);
-    H1D_MpiMass_0_100MeV->GetYaxis()->SetRangeUser(-5, 25);
+    // H1D_MpiMass_0_100MeV->Scale(270.0);
+    // H1D_MpiMass_0_100MeV->GetYaxis()->SetRangeUser(-0.01, 0.1);
+    H1D_MpiMass_0_100MeV->Scale(1/1074.60);
     H1D_MpiMass_0_100MeV->GetXaxis()->SetTitle("M_{#pi#pi} (GeV/c^{2})");
-    H1D_MpiMass_0_100MeV->GetYaxis()->SetTitle("d#sigma/dM_{#pi#pi} [mb/(MeV/c^{2})]");
+    H1D_MpiMass_0_100MeV->GetYaxis()->SetTitle("d#sigma/dM_{#pi#pi} [{#mu}b/(MeV/c^{2})]");
     H1D_MpiMass_0_100MeV->SetMarkerStyle(7);
     H1D_MpiMass_0_100MeV->GetYaxis()->SetTitleOffset(1.2);
     H1D_MpiMass_0_100MeV->GetYaxis()->SetTitleSize(0.05);
@@ -74,17 +75,17 @@ void Mass_distribution_fit(){
                                                   "M_#omega", "#Gamma_#omega", "#phi_#omega");
 
     // Set initial parameter values for A, B RhoMass, GammaRho respectively.
-    BW_rho_omega_photoproduction_param->SetParameters(RhoPdgMass, RhoLifeTime, 1.0, -1.0, 1, OmegaPdgMass, OmegaLifeTime,
+    BW_rho_omega_photoproduction_param->SetParameters(RhoPdgMass, RhoLifeTime, 1.0, -1.0, 0.5, OmegaPdgMass, OmegaLifeTime,
                                                      1.0);
 
     BW_rho_omega_photoproduction_param->SetParLimits(0, 0.6, 1);
-    BW_rho_omega_photoproduction_param->SetParLimits(0, 0, 0.4);
-    BW_rho_omega_photoproduction_param->SetParLimits(0, 0, 5);
-    BW_rho_omega_photoproduction_param->SetParLimits(0, -10, 0);
-    BW_rho_omega_photoproduction_param->SetParLimits(0, 0, 5);
-    BW_rho_omega_photoproduction_param->SetParLimits(0, 0.6, 1);
-    BW_rho_omega_photoproduction_param->SetParLimits(0, 0, 0.4);
-    BW_rho_omega_photoproduction_param->SetParLimits(0, -3.14, 3.14);
+    BW_rho_omega_photoproduction_param->SetParLimits(1, 0, 0.4);
+    BW_rho_omega_photoproduction_param->SetParLimits(2, 0, 1);
+    BW_rho_omega_photoproduction_param->SetParLimits(3, -10, 0);
+    BW_rho_omega_photoproduction_param->SetParLimits(4, 0, 1);
+    BW_rho_omega_photoproduction_param->SetParLimits(5, 0.6, 1);
+    BW_rho_omega_photoproduction_param->SetParLimits(6, 0, 0.4);
+    BW_rho_omega_photoproduction_param->SetParLimits(7, -3.14, 3.14);
 
 
     // Perform the first fit and set its line and marker color
