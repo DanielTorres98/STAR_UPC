@@ -89,9 +89,13 @@ double BW_Interference_term(const double *x, const double *par) {
     double C =  par[3];
     double M_omega = par[4];
     double Gamma_omega = par[5];
+    double phi_omega = par[6];
+
+    complex<double> exp_w(TMath::Cos(phi_omega), TMath::Sin(phi_omega));
 
     double M = x[0];
-    return 2*(A*pole_term(M, M_rho, Gamma_rho)*C*std::conj(pole_term(M, M_omega, Gamma_omega))).real();
+    return 2*(A*pole_term(M, M_rho, Gamma_rho)*
+           C*std::conj(exp_w*pole_term(M, M_omega, Gamma_omega))).real();
 }
 
 double SodingEqn(const double *x, const double *par) {

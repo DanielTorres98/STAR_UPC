@@ -159,7 +159,7 @@ void Analysis_Code() {
         //get out of loop if the event has anything other than 2 tracks. You will probably want to
         //uncomment this cut later, but if you want to look at more kinds of tracks it might be
         //good to comment out now. 
-        // if (EventZDCEast[iEvent]<2 & EventZDCEast[iEvent]<2) continue;
+        if (EventZDCEast[iEvent]==0 || EventZDCWest[iEvent]==0) continue;
         if(TotTracks != 2) continue;
 
             //little block of code to keep track of % done running code. Can be deleted.
