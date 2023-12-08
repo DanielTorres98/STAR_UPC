@@ -17,81 +17,152 @@
 #include "utils/Fit_functions.h"
 #include "utils/utils.h"
 
-void Mass_distribution_fit(){
+void Mass_distribution_fit_xy_scan(){
 
-    TFile * InputFile = new TFile( "UpcOutput_Rho.root", "READ" );
+   const int N = 52;
+   double x[N] = {0.6036217304,
+                    0.6084507042,
+                    0.63138833,
+                    0.6410462777,
+                    0.6434607646,
+                    0.6555331992,
+                    0.6639839034,
+                    0.6688128773,
+                    0.6784708249,
+                    0.6881287726,
+                    0.6929577465,
+                    0.6965794769,
+                    0.7062374245,
+                    0.7110663984,
+                    0.723138833,
+                    0.7315895372,
+                    0.7400402414,
+                    0.7460764588,
+                    0.7533199195,
+                    0.7557344064,
+                    0.7617706237,
+                    0.7665995976,
+                    0.7690140845,
+                    0.7714285714,
+                    0.7762575453,
+                    0.7786720322,
+                    0.7822937626,
+                    0.783501006,
+                    0.785915493,
+                    0.7883299799,
+                    0.7919517103,
+                    0.7943661972,
+                    0.8040241449,
+                    0.8064386318,
+                    0.8088531187,
+                    0.8136820926,
+                    0.8197183099,
+                    0.8269617706,
+                    0.8293762575,
+                    0.8438631791,
+                    0.8559356137,
+                    0.8668008048,
+                    0.8716297787,
+                    0.890945674,
+                    0.909054326,
+                    0.9718309859,
+                    1.010462777,
+                    1.050301811,
+                    1.091348089,
+                    1.13722334,
+                    1.171026157,
+                    1.278470825}; 
+    double y[N] = {
+                    6.245847176,
+                    6.710963455,
+                    7.574750831,
+                    8.438538206,
+                    8.837209302,
+                    9.568106312,
+                    9.966777409,
+                    10.7641196,
+                    11.29568106,
+                    12.62458472,
+                    13.48837209,
+                    14.08637874,
+                    14.88372093,
+                    15.94684385,
+                    17.6744186,
+                    18.87043189,
+                    19.46843854,
+                    19.86710963,
+                    19.53488372,
+                    20,
+                    20.06644518,
+                    19.80066445,
+                    19.40199336,
+                    19.6013289,
+                    18.87043189,
+                    18.00664452,
+                    16.41196013,
+                    14.88372093,
+                    14.01993355,
+                    13.15614618,
+                    12.62458472,
+                    12.02657807,
+                    11.1627907,
+                    10.56478405,
+                    10.29900332,
+                    9.833887043,
+                    8.77076412,
+                    7.707641196,
+                    7.043189369,
+                    5.714285714,
+                    4.850498339,
+                    4.053156146,
+                    3.720930233,
+                    2.657807309,
+                    2.126245847,
+                    0.9966777409,
+                    0.6644518272,
+                    0.5315614618,
+                    0.3986710963,
+                    0.1993355482,
+                    0.1993355482,
+                    0.06644518272};
 
-    // TH1D* H1D_MpiMass_0_100MeV = (TH1D*) InputFile->Get("hRhoMass");
-    TH1D* H1D_MpiMass_0_100MeV = (TH1D*) InputFile->Get("hMpiMass_0_100MeV");
+    TGraph *H1D_MpiMass_0_100MeV = new TGraph(N, x, y);
+
     H1D_MpiMass_0_100MeV->SetTitle("#pi^{+}#pi^{-} mass distribution p_{T} < 100 MeV/c^2");
-    H1D_MpiMass_0_100MeV->Scale(1/1074.60);
-    H1D_MpiMass_0_100MeV->GetXaxis()->SetTitle("M_{#pi#pi} (GeV/c^{2})");
+    H1D_MpiMass_0_100MeV->GetXaxis()->SetTitle("M_{#pi#pi} (GeV/c^s{2})");
     H1D_MpiMass_0_100MeV->GetYaxis()->SetTitle("d#sigma/dM_{#pi#pi} [#mub/(GeV/c^{2})]");
     H1D_MpiMass_0_100MeV->SetMarkerStyle(7);
     H1D_MpiMass_0_100MeV->GetYaxis()->SetTitleOffset(1.2);
     H1D_MpiMass_0_100MeV->GetYaxis()->SetTitleSize(0.05);
+    H1D_MpiMass_0_100MeV->GetXaxis()->SetRangeUser(0.5, 1.3);
     H1D_MpiMass_0_100MeV->GetXaxis()->SetTitleSize(0.05);
     H1D_MpiMass_0_100MeV->GetXaxis()->SetTitleOffset(0.8);
 
-   // Fit
-    TF1 *Soding_Param = new TF1("Soding_Param", SodingEqn, RhoPdgMass-RhoLifeTime, RhoPdgMass+RhoLifeTime, 4);
-
-    // Set parameter names
-    Soding_Param->SetParNames("A", "B", "M_#rho", "#Gamma_#rho", "C", "D", "E");
-
-    // Set initial parameter values for A, B RhoMass, GammaRho respectively.
-    Soding_Param->SetParameters(1.0, 1.0, RhoPdgMass, RhoLifeTime);
-
-    // Perform the first fit and set its line and marker color
-    H1D_MpiMass_0_100MeV->Fit("Soding_Param", "ERS0", "", 0.6, 0.9);
-
-    // Perform the second fit and set its line and marker color
-    // fitParams = (A, B, MRho, Gammarho)
-    double fit_Soding_Params[4]; Soding_Param->GetParameters(fit_Soding_Params);
-    double fit_Soding_Errors[4]; for (int i = 0; i < 4; i++) fit_Soding_Errors[i] = Soding_Param->GetParError(i);
-
-    TF1 *Soding_Param_all = new TF1("Soding_Param_all", SodingEqn, 0.44, 1.3, 4);
-    Soding_Param_all->SetLineColor(kBlack); Soding_Param_all->SetLineStyle(1);
-    Soding_Param_all->SetParameters(fit_Soding_Params);
-
-    TF1 *Soding_Param_term1 = new TF1("Soding_Param_term1", Pole_term_squared, 0.44, 1.3, 4);
-    Soding_Param_term1->SetLineColor(kBlack); Soding_Param_term1->SetLineStyle(2);
-    Soding_Param_term1->SetParameter(0, fit_Soding_Params[0]);
-    Soding_Param_term1->SetParameter(1, fit_Soding_Params[2]);
-    Soding_Param_term1->SetParameter(2, fit_Soding_Params[3]);
-
-    TF1 *Soding_Param_term2 = new TF1("SodingEqn_addition_term", Interference_term, 0.44, 1.3, 4);
-    Soding_Param_term2->SetLineColor(kBlack); Soding_Param_term2->SetLineStyle(3);
-    Soding_Param_term2->SetParameters(fit_Soding_Params);
-
     // Fit
     TF1 *BW_rho_omega_photoproduction_param = new TF1("BW_rho_omega_photoproduction_param",
-                            BW_rho_omega_photoproduction, RhoPdgMass-2*RhoLifeTime, RhoPdgMass+2*RhoLifeTime, 10);
+                            BW_rho_omega_photoproduction, RhoPdgMass-2*RhoLifeTime, RhoPdgMass+2*RhoLifeTime, 8);
 
     // Set parameter names
     BW_rho_omega_photoproduction_param->SetParNames("M_#rho", "#Gamma_#rho", "A_#rho", "B_{#pi#pi}", "C_#omega",
-                                                  "M_#omega", "#Gamma_#omega", "#phi_#omega", "p0", "p1");
+                                                  "M_#omega", "#Gamma_#omega", "#phi_#omega");
 
     // Set initial parameter values for A, B RhoMass, GammaRho respectively.
-    BW_rho_omega_photoproduction_param->SetParameters(RhoPdgMass, RhoLifeTime, 0.8, -1.21, 0.5, OmegaPdgMass, OmegaLifeTime,
-                                                     1.46, 1.0, -1.0);
+    BW_rho_omega_photoproduction_param->SetParameters(RhoPdgMass, RhoLifeTime, 1.5, -1.0, 0.55, OmegaPdgMass, OmegaLifeTime,
+                                                     1.0);
 
-    BW_rho_omega_photoproduction_param->SetParLimits(0, 0.750, 0.790); // M_rho
-    BW_rho_omega_photoproduction_param->SetParLimits(1, 0.1, 0.2);     // Gamma_rho
-    BW_rho_omega_photoproduction_param->SetParLimits(2, 0.0, 5.0);     // A
-    BW_rho_omega_photoproduction_param->SetParLimits(3, -10.0, 0.0);   // B
-    BW_rho_omega_photoproduction_param->SetParLimits(4, 0.0, 1.0);     // C
-    BW_rho_omega_photoproduction_param->SetParLimits(5, 0.770, 0.790); // M_omega
-    BW_rho_omega_photoproduction_param->SetParLimits(6, 0.01, 0.1);    // Gamma_omega
-    BW_rho_omega_photoproduction_param->SetParLimits(7, -3.14, 3.14);  // phi
-    BW_rho_omega_photoproduction_param->SetParLimits(8, 0.0, 3.0);     // p0
-    BW_rho_omega_photoproduction_param->SetParLimits(9, -2.0, 0.0);    // p1
+    BW_rho_omega_photoproduction_param->SetParLimits(0, 0.6, 1.0);
+    BW_rho_omega_photoproduction_param->SetParLimits(1, 0.0, 0.4);
+    BW_rho_omega_photoproduction_param->SetParLimits(2, 0.0, 5.0); // A
+    BW_rho_omega_photoproduction_param->SetParLimits(3, -10, 0); // B
+    BW_rho_omega_photoproduction_param->SetParLimits(4, 0.0, 5.0); // C
+    BW_rho_omega_photoproduction_param->SetParLimits(5, 0.6, 1.0);
+    BW_rho_omega_photoproduction_param->SetParLimits(6, 0.0, 0.4);
+    BW_rho_omega_photoproduction_param->SetParLimits(7, -3.14, 3.14);
 
 
     // Perform the first fit and set its line and marker color
-    // ROOT::Math::MinimizerOptions::SetDefaultMinimizer("Genetic");
-    ROOT::Math::MinimizerOptions::SetDefaultTolerance(0.000001);
-    H1D_MpiMass_0_100MeV->Fit("BW_rho_omega_photoproduction_param", "ERS0", "", 0.6, 1.3);
+    // ROOT::Math::MinimizerOptions::SetDefaultMinimizer("Genetic");
+    H1D_MpiMass_0_100MeV->Fit("BW_rho_omega_photoproduction_param", "ERS0", "", 0.6, 1.1);
     double chi2 = BW_rho_omega_photoproduction_param->GetChisquare();
     int ndf = BW_rho_omega_photoproduction_param->GetNDF();
     double chi2PerNdf = chi2 / ndf;
@@ -109,13 +180,13 @@ void Mass_distribution_fit(){
     double Gamma_omega = BW_rho_omega_photoproduction_param_values[6];
     double phi_omega = BW_rho_omega_photoproduction_param_values[7];
 
-    TF1 *BW_rho_omega_photoproduction_fit = new TF1("BW_rho_omega_photoproduction_fit", BW_rho_omega_photoproduction, 0.6, 1.3, 10);
+    TF1 *BW_rho_omega_photoproduction_fit = new TF1("BW_rho_omega_photoproduction_fit", BW_rho_omega_photoproduction, 0.44, 1.3, 8);
     BW_rho_omega_photoproduction_fit->SetLineColor(kBlack);
     BW_rho_omega_photoproduction_fit->SetLineStyle(1);
     BW_rho_omega_photoproduction_fit->SetParameters(BW_rho_omega_photoproduction_param_values);
 
     TF1 *BW_rho_omega_photoproduction_rho_pole_term = new TF1("BW_rho_omega_photoproduction_rho_pole_term", 
-                                                              Pole_term_squared, 0.6, 1.3, 3);
+                                                              Pole_term_squared, 0.44, 1.3, 3);
     BW_rho_omega_photoproduction_rho_pole_term->SetLineColor(kRed);
     BW_rho_omega_photoproduction_rho_pole_term->SetLineStyle(1);
     BW_rho_omega_photoproduction_rho_pole_term->SetParameter(0, A_rho);
@@ -125,14 +196,14 @@ void Mass_distribution_fit(){
 
     double Branching_ratio_omega_2_pipi = 0.0153;
     TF1 *BW_rho_omega_photoproduction_omega_pole_term = new TF1("BW_rho_omega_photoproduction_omega_pole_term", 
-                                                              Pole_term_squared, 0.6, 1.3, 3);
+                                                              Pole_term_squared, 0.44, 1.3, 3);
     BW_rho_omega_photoproduction_omega_pole_term->SetLineColor(kCyan);
     BW_rho_omega_photoproduction_omega_pole_term->SetLineStyle(1);
     BW_rho_omega_photoproduction_omega_pole_term->SetParameter(0, C_omega*sqrt(Branching_ratio_omega_2_pipi));
     BW_rho_omega_photoproduction_omega_pole_term->SetParameter(1, M_omega);
     BW_rho_omega_photoproduction_omega_pole_term->SetParameter(2, Gamma_rho);
 
-    TF1 *B_pipi_line = new TF1("B_pipi_line", "[0]", 0.6, 1.3);
+    TF1 *B_pipi_line = new TF1("B_pipi_line", "[0]", 0.44, 1.3);
 
     B_pipi_line->SetParameter(0, B_pipi*B_pipi);
     // Set line properties if needed (e.g., color, width...)ß
@@ -140,7 +211,7 @@ void Mass_distribution_fit(){
     B_pipi_line->SetLineWidth(2);      // Set line width
 
     // Multiply
-    TF1 *rho_interference_term = new TF1("rho_interference_term", Interference_term, 0.6, 1.3, 4);
+    TF1 *rho_interference_term = new TF1("rho_interference_term", Interference_term, 0.44, 1.3, 4);
     rho_interference_term->SetLineStyle(1);
     rho_interference_term->SetParameter(0, A_rho);
     rho_interference_term->SetParameter(1, B_pipi);
@@ -148,7 +219,7 @@ void Mass_distribution_fit(){
     rho_interference_term->SetParameter(3, Gamma_rho);
     rho_interference_term->SetLineColor(kGreen);
 
-    TF1 *omega_interference_term = new TF1("omega_interference_term", Interference_term, 0.6, 1.3, 4);
+    TF1 *omega_interference_term = new TF1("omega_interference_term", Interference_term, 0.44, 1.3, 4);
     omega_interference_term->SetLineStyle(2);
     omega_interference_term->SetParameter(0, C_omega*sqrt(Branching_ratio_omega_2_pipi));
     omega_interference_term->SetParameter(1, B_pipi);
@@ -156,7 +227,7 @@ void Mass_distribution_fit(){
     omega_interference_term->SetParameter(3, Gamma_omega);
     omega_interference_term->SetLineColor(kSpring);
 
-    TF1 *BW_interference_term = new TF1("BW_interference_term", BW_Interference_term, 0.6, 1.3, 7);
+    TF1 *BW_interference_term = new TF1("BW_interference_term", BW_Interference_term, 0.44, 1.3, 7);
     BW_interference_term->SetLineColor(kMagenta);
     BW_interference_term->SetLineStyle(2);
     BW_interference_term->SetParameter(0, A_rho);
@@ -168,40 +239,12 @@ void Mass_distribution_fit(){
     BW_interference_term->SetParameter(6, phi_omega);
 
     // Canvas
-    TCanvas *c1 = new TCanvas("c1", "c1", 800, 600);
-    SetCanvasStyle(c1);
-    c1->cd();
-
-    H1D_MpiMass_0_100MeV->Draw("E1");
-
-    Soding_Param_all->Draw("Same");
-
-    Soding_Param_term1->Draw("Same");
-
-    Soding_Param_term2->Draw("Same");
-
-    TLegend *legend = new TLegend(0.6, 0.6, 0.9, 0.9);
-    legend->AddEntry(H1D_MpiMass_0_100MeV, "Data points", "p");
-    legend->AddEntry(Soding_Param_all, "Modified S\\ddot{o}ding", "l");
-    AddEmptyLegendEntry(legend, "Parametrization");
-    legend->AddEntry(Soding_Param_term1, "Pole term", "l");
-    legend->AddEntry(Soding_Param_term2, "Interference term", "l");
-    legend->SetTextSize(0.035);
-    // Remove the legend box
-    legend->SetBorderSize(0);
-    legend->Draw();
-
-    c1->SetLeftMargin(0.15); 
-    c1->SaveAs("Images/MpiMass_0_100MeV.pdf");
-    c1->SaveAs("Images/MpiMass_0_100MeV.png");
-    delete c1;
-
-    // Canvas
     TCanvas *c3 = new TCanvas("c3", "c3", 800, 600);
     SetCanvasStyle(c3);
-    H1D_MpiMass_0_100MeV->Draw("E1");
+    H1D_MpiMass_0_100MeV->Draw();
     double hist_maxima = H1D_MpiMass_0_100MeV->GetMaximum();
-    H1D_MpiMass_0_100MeV->GetYaxis()->SetRangeUser(-1.0, hist_maxima*1.2);
+    cout << hist_maxima << endl;
+    H1D_MpiMass_0_100MeV->GetYaxis()->SetRangeUser(-5, 30);
     // gStyle->SetOptFit(1111);
     BW_rho_omega_photoproduction_fit->Draw("Same");
 
@@ -237,7 +280,7 @@ void Mass_distribution_fit(){
     pt->SetTextSize(0.05);
     pt->Draw();
     c3->SetLeftMargin(0.15);
-    c3->SaveAs("Images/Rho_omega_photoproduction.pdf");
-    c3->SaveAs("Images/Rho_omega_photoproduction.png");
+    c3->SaveAs("Images/Rho_omega_photoproduction_xy_scan.pdf");
+    c3->SaveAs("Images/Rho_omega_photoproduction_xy_scan.png");
     delete c3;
 }

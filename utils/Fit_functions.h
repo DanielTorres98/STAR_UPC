@@ -23,7 +23,7 @@ std::complex<double> pole_term(double q, double M, double Gamma) {
     */
 
     double numerator = sqrt(q * M * Gamma);
-    std::complex<double> denominator(q * q - M * M, + Gamma * M);
+    std::complex<double> denominator(q * q - M * M, Gamma * M);
 
     return numerator/denominator;
 }
@@ -48,15 +48,19 @@ double BW_rho_omega_photoproduction(const double *x, const double *par) {
     double M_omega = par[5];
     double Gamma_omega = par[6];
     double phi_omega = par[7];
+    double p0 = par[8];
+    double p1 = par[9];
+    // double p0 = par[8];
+    // double p1 = par[0];
     double Branching_ratio_omega_2_pipi = 0.0153;
     double M = x[0];
 
     std::complex<double> rho_term = A_rho*pole_term(M, M_rho, Gamma_rho);
-    complex<double> exp_w(TMath::Cos(phi_omega), TMath::Sin(phi_omega));
-    std::complex<double> omega_term = C_omega*sqrt(Branching_ratio_omega_2_pipi)*
-                                      pole_term(M, M_omega, Gamma_omega)*exp_w;
-
-    return std::norm(rho_term+omega_term+B_pp);
+    std::complex<double> exp_w(TMath::Cos(phi_omega), TMath::Sin(phi_omega));
+    std::complex<double> omega_term = C_omega*sqrt(Branching_ratio_omega_2_pipi)*exp_w*
+                                      pole_term(M, M_omega, Gamma_omega);
+    // - 0.86*M + 0.99
+    return std::norm(rho_term+omega_term+B_pp) + p1*M + p0;
 }
 
 // Breit-Wigner Function + Soding Term.
@@ -94,8 +98,8 @@ double BW_Interference_term(const double *x, const double *par) {
     complex<double> exp_w(TMath::Cos(phi_omega), TMath::Sin(phi_omega));
 
     double M = x[0];
-    return 2*(A*pole_term(M, M_rho, Gamma_rho)*
-           C*std::conj(exp_w*pole_term(M, M_omega, Gamma_omega))).real();
+    return 2*A*C*(pole_term(M, M_rho, Gamma_rho)*
+           std::conj(exp_w*pole_term(M, M_omega, Gamma_omega))).real();
 }
 
 double SodingEqn(const double *x, const double *par) {

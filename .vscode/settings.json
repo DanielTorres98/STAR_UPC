@@ -1,0 +1,10 @@
+{
+    "files.associations": {
+        "Phi_distribution_fit.C": "cpp",
+        "file.C": "cpp",
+        "Mass_distribution_vs_Pt.C": "cpp",
+        "Mass_distribution_fit.C": "cpp",
+        "Analysis_Code.C": "cpp",
+        "Mass_distribution_fit_paper_data.C": "cpp"
+    }
+}
