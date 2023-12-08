@@ -279,7 +279,8 @@ void Analysis_Code() {
                 if (RhoMomentum.Pt() < 0.100 && std::abs(RhoMomentum.Rapidity())<1) {  
                     hRhoMass->Fill(RhoMass);
                 }
-                if ((DeltaDeltaTOF < 0.750 && DeltaDeltaTOF > 0) && (NSigmaPion < 8)) {
+                // if ((DeltaDeltaTOF < 0.750 && DeltaDeltaTOF > 0) && (NSigmaPion < 8)) 
+                if ((abs(NSigmaPion1) < 3) && (abs(NSigmaPion2) < 3)) {
                     if (RhoMomentum.Pt()<0.100 && std::abs(RhoMomentum.Rapidity())<1){
                         count ++;
                         SurvivingFraction ++;
@@ -331,7 +332,7 @@ void Analysis_Code() {
 
     cout << endl;
     cout << "Event loop done" << endl;
-    cout << number_of_zeros << endl;
+    cout << count << endl;
     cout << "Surviving Fraction of Events After Cuts" << endl;
     cout << SurvivingFraction/EventLimit << endl;
     hRhoMass_NoCut->Scale(1.0 / hRhoMass_NoCut->Integral());

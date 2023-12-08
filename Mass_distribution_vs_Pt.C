@@ -23,21 +23,11 @@ void Mass_distribution_vs_Pt(){
 
     // Canvas
     TCanvas *c1 = new TCanvas("c1", "c1", 800, 600);
-
-    gStyle->SetOptStat(0);
-    gStyle->SetOptFit(0);
-    gStyle->SetLineWidth(2);
-
-    gPad->SetTopMargin(0.08);
-    gPad->SetBottomMargin(0.11);
-    gPad->SetLeftMargin(0.11);
-    gPad->SetRightMargin(0.05);
-    gPad->SetFrameLineWidth(2);
+    
+    // Call the function to set the canvas style
+    SetCanvasStyle(c1);
     //---------------------------------------------------------------------------
     //---------------------------------------------------------------------------
-    TLatex tl;
-    tl.SetTextSize(0.06);
-    tl.SetNDC();
     c1->cd();
 
     H1D_MpiMass_0_20MeV->SetLineColor(kRed); H1D_MpiMass_0_20MeV->Draw();
