@@ -17,7 +17,11 @@ void Analysis_Code() {
 
     // Output file where histograms go. Histograms defined below a TFile are automatically
     // associated with that TFile.
-    TFile * OutputFile = new TFile( "UpcOutput_Rho.root", "RECREATE" );
+    TFile * OutputFile = new TFile( "output_files/UpcOutput_test.root", "RECREATE" );
+
+    std::ofstream outFile("output_2.txt");
+    std::streambuf *coutbuf = std::cout.rdbuf(); // Save old buf
+    std::cout.rdbuf(outFile.rdbuf()); // Redirect std::cout to outFile
 
     // 2D histograms. Defined by (name, title, #binsx, lower range x, upper range x, binsy, low y,
     // upper y)
@@ -75,7 +79,7 @@ void Analysis_Code() {
     TH1F * hRhoMass_150_200 = new TH1F("hRhoMass_150_200", "#pi^{+} #pi^{-} pairs", 100, 0.6, 0.9);
     TH1F * hRhoMass_200_1000 = new TH1F("hRhoMass_200_1000", "#pi^{+} #pi^{-} pairs", 100, 0.6, 0.9);
     TH1F * hMpiMass_0_100MeV = new TH1F("hMpiMass_0_100MeV", "#pi^{+}#pi^{-} mass distribution p_{T} < 100 MeV",
-                                    static_cast<int>((1.3 - 0.5) / 0.0025), 0.5, 1.3);
+                                    static_cast<int>((1.3 - 0.4) / 0.0025), 0.4, 1.3);
 
     TH1F * hMpiMass_0_100MeV_v2 = new TH1F("hMpiMass_0_100MeV_v2", "#pi^{+}#pi^{-} mass distribution P_{T} < 100 MeV",
                                         100, 0.44, 1.1);
@@ -151,7 +155,7 @@ void Analysis_Code() {
     //
     int number_of_zeros = 0;
     float SurvivingFraction = 0.0;
-    
+    cout << EventsInFile << endl;
     while (myReader.Next() && iEvent < EventLimit) {
         iEvent ++;
         TotTracks = trackPt.GetSize();
@@ -159,12 +163,11 @@ void Analysis_Code() {
         //get out of loop if the event has anything other than 2 tracks. You will probably want to
         //uncomment this cut later, but if you want to look at more kinds of tracks it might be
         //good to comment out now. 
-        if (EventZDCEast[iEvent]==0 || EventZDCWest[iEvent]==0) continue;
-        if(TotTracks != 2) continue;
-
+        // if (EventZDCEast[iEvent]==0 || EventZDCWest[iEvent]==0) continue;
+        if (TotTracks != 2) continue;
             //little block of code to keep track of % done running code. Can be deleted.
             fraction = iEvent * 100.0 / totalevents;
-            if (fraction % 1 == 0 && fraction != prev_frac) {
+        if (fraction % 1 == 0 && fraction != prev_frac) {
             printf("\b\b\b%2d%%", fraction);
             std::cout << std::flush;
             prev_frac = fraction;
@@ -178,15 +181,13 @@ void Analysis_Code() {
         // start first track loop, over + tracks.
         //
         bool found_zero = false;
-        int count;
-        count = 1;
         for (unsigned int iTp = 0; iTp < TotTracks; iTp++ ){
             //4 momentum is uniquely defined by pT, eta, phi, and mass. We assume the tracks are
             //pions and later evaluate the truth of this idea and correct accordingly.
             //
             TrackMomentum.SetPtEtaPhiM(trackPt[iTp], trackEta[iTp], trackPhi[iTp], PionPdgMass);
             float TrackMSqr = GetMassSqr(TrackMomentum.P(), trackBeta[iTp]);
-            float t1 = GetDeltaTOF(trackLength[iTp], nTrackMomentum.P(), PionPdgMass);
+            float t1 = GetDeltaTOF(trackLength[iTp], TrackMomentum.P(), PionPdgMass);
             float NSigmaPion1 = trackNSigmaPion[iTp];
             float NSigmaKaon1 = trackNSigmaKaon[iTp];
             float NSigmaElectron1 = trackNSigmaElectron[iTp];
@@ -230,6 +231,8 @@ void Analysis_Code() {
                 float NSigmaElectron = NSigmaElectron1*NSigmaElectron1 +
                                        NSigmaElectron2*NSigmaElectron2;
                 float NSigmaProton = NSigmaProton1*NSigmaProton1 + NSigmaProton2*NSigmaProton2;
+                int charge1 = static_cast<int>(trackQ[iTp]);
+                int charge2 = static_cast<int>(trackQ[iTn]);
 
                 nTrackMomentum.SetPtEtaPhiM( trackPt[iTn], trackEta[iTn], trackPhi[iTn], PionPdgMass);
 
@@ -279,47 +282,58 @@ void Analysis_Code() {
                 if (RhoMomentum.Pt() < 0.100 && std::abs(RhoMomentum.Rapidity())<1) {  
                     hRhoMass->Fill(RhoMass);
                 }
-                // if ((DeltaDeltaTOF < 0.750 && DeltaDeltaTOF > 0) && (NSigmaPion < 8)) 
-                if ((abs(NSigmaPion1) < 3) && (abs(NSigmaPion2) < 3)) {
-                    if (RhoMomentum.Pt()<0.100 && std::abs(RhoMomentum.Rapidity())<1){
-                        count ++;
+                if ((DeltaDeltaTOF < 0.750 && DeltaDeltaTOF > 0) && (NSigmaPion < 8)) {
+                    if ((abs(NSigmaPion1) < 3) && (abs(NSigmaPion2) < 3)) {
+                        cout << "Event number: " << iEvent << endl;
+                        cout << "t1 = " << t1 << endl;
+                        cout << "t2 = " << t2 << endl;
+                        cout << "DeltaTOF: " << DeltaTOF << endl;
+                        cout << "DeltaTOF_expected: " << DeltaTOF_expected << endl;
+                        cout << "DeltaDeltaTOF: " << DeltaDeltaTOF << endl;
+                        cout << endl;
+                        cout << "NSigma Pion 1 = " << trackNSigmaPion[iTp] << endl;
+                        cout << "NSigma Pion 2 = " << trackNSigmaPion[iTn] << endl;
+                        cout << "NSigma Pion Pair = " << NSigmaPion << endl;
+                        cout << endl;
+                        cout << endl;
                         SurvivingFraction ++;
-
-                        hMpiMass_0_100MeV->Fill(RhoMass);
-                        hMpiMass_0_100MeV_v2->Fill(RhoMass);
-                        hMpiMass_0_100MeV_v3->Fill(RhoMass);
-                        hKaonMass->Fill(RhoMass);
-                    }
-                    if (RhoMass > 0.65 && RhoMass < 0.90) {
-                        // Defining new reference frame variables.
-                        //
-                        float cosphi = (RhoMomentum.Px()*Polarization.Px() + RhoMomentum.Py()*
-                               Polarization.Py())/(RhoMomentum.Pt()*Polarization.Pt());
-                        float sinphi = (RhoMomentum.Px()*Polarization.Py() - RhoMomentum.Py()*
-                               Polarization.Px())/(RhoMomentum.Pt()*Polarization.Pt());
-                        float phi = TMath::ACos(cosphi);
-                        if (RhoMomentum.Pt()*sinphi< 0){
-                            phi = -1*phi;
+                        if (RhoMomentum.Pt()<=0.100 && std::abs(RhoMomentum.Rapidity())<1){
+                            hMpiMass_0_100MeV->Fill(RhoMass);
+                            hMpiMass_0_100MeV_v2->Fill(RhoMass);
+                            hMpiMass_0_100MeV_v3->Fill(RhoMass);
+                            hKaonMass->Fill(RhoMass);
                         }
+                        if (RhoMass > 0.65 && RhoMass < 0.90) {
+                            // Defining new reference frame variables.
+                            //
+                            float cosphi = (RhoMomentum.Px()*Polarization.Px() + RhoMomentum.Py()*
+                                Polarization.Py())/(RhoMomentum.Pt()*Polarization.Pt());
+                            float sinphi = (RhoMomentum.Px()*Polarization.Py() - RhoMomentum.Py()*
+                                Polarization.Px())/(RhoMomentum.Pt()*Polarization.Pt());
+                            float phi = TMath::ACos(cosphi);
+                            if (RhoMomentum.Pt()*sinphi< 0){
+                                phi = -1*phi;
+                            }
 
-                        // 2D Histogram
-                        //
-                        hPxPy->Fill(RhoMomentum.Pt()*cos(phi), RhoMomentum.Pt()*sin(phi));
-                        hCos2phivsPT->Fill(RhoMomentum.Pt(), 2*cos(2*phi));
+                            // 2D Histogram
+                            //
+                            hPxPy->Fill(RhoMomentum.Pt()*cos(phi), RhoMomentum.Pt()*sin(phi));
+                            hCos2phivsPT->Fill(RhoMomentum.Pt(), 2*cos(2*phi));
 
-                        // 1D Histograms
-                        //
-                        hDeltaPhi->Fill(DeltaPhi);
-                        hPhipPPhim->Fill(RhoMomentum.Phi());
-                        hPhipMPhim->Fill(Polarization.Phi());
-                        hcosphi->Fill(cosphi);
-                        hPhip->Fill(pTrackMomentum.Phi());
-                        hPhim->Fill(nTrackMomentum.Phi());
-                        hRhoTP->Fill(RhoMomentum.Pt());
-                        if (RhoMomentum.Pt()<0.060) {
-                           hphi->Fill(phi);
-                           hCos2phivsY->Fill(abs(RhoMomentum.Rapidity()), 2*cos(2*phi));
-                           hCos2phi->Fill(2*cos(2*phi));
+                            // 1D Histograms
+                            //
+                            hDeltaPhi->Fill(DeltaPhi);
+                            hPhipPPhim->Fill(RhoMomentum.Phi());
+                            hPhipMPhim->Fill(Polarization.Phi());
+                            hcosphi->Fill(cosphi);
+                            hPhip->Fill(pTrackMomentum.Phi());
+                            hPhim->Fill(nTrackMomentum.Phi());
+                            hRhoTP->Fill(RhoMomentum.Pt());
+                            if (RhoMomentum.Pt()<0.060) {
+                            hphi->Fill(phi);
+                            hCos2phivsY->Fill(abs(RhoMomentum.Rapidity()), 2*cos(2*phi));
+                            hCos2phi->Fill(2*cos(2*phi));
+                            }
                         }
                     }
                 }
@@ -330,11 +344,13 @@ void Analysis_Code() {
 
    } //end event loop
 
-    cout << endl;
-    cout << "Event loop done" << endl;
-    cout << count << endl;
+    // cout << endl;
+    // cout << "Event loop done" << endl;
     cout << "Surviving Fraction of Events After Cuts" << endl;
     cout << SurvivingFraction/EventLimit << endl;
+
+    std::cout.rdbuf(coutbuf); // Reset to standard output again
+    outFile.close();
     hRhoMass_NoCut->Scale(1.0 / hRhoMass_NoCut->Integral());
     hRhoMass_0_20->Scale(1.0 / hRhoMass_0_20->Integral());
     hRhoMass_20_40->Scale(1.0 / hRhoMass_20_40->Integral());

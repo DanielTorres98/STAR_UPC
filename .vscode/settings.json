@@ -7,6 +7,16 @@
         "Analysis_Code.C": "cpp",
         "Mass_distribution_fit_paper_data.C": "cpp",
         "Create_Analysis_Tree.C": "cpp",
-        "prodAnaTree.C": "cpp"
+        "prodAnaTree.C": "cpp",
+        "Analysis_Code_v2.C": "cpp",
+        "Phi_Distribution.C": "cpp",
+        "Cos2phi_vs_Pt.C": "cpp",
+        "Invariant_mass.C": "cpp",
+        "__bit_reference": "cpp",
+        "bitset": "cpp",
+        "unordered_map": "cpp",
+        "chrono": "cpp",
+        "complex": "cpp",
+        "ostream": "cpp"
     }
 }
