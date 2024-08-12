@@ -6,18 +6,13 @@
 
 void vertical_line(double x, int color = kRed);
 
-void Invariant_mass(double ptLow=0.0, double ptHigh=0.099){
+void Invariant_mass(double ptLow=0.0, double ptHigh=0.1){
 
     TFile * InputFile = new TFile(
-    "/Users/daniel/Documents/Research/BNL/STAR_UPC/output_files/UPC_output.root",
-    "READ");
-
-    TFile * InputFile_v2 = new TFile(
-    "/Users/daniel/Documents/Research/BNL/STAR_UPC/output_files/UpcOutput_test.root",
+    "/Users/daniel/Research/STAR_UPC/output_files/UPC_output.root",
     "READ");
 
     TH2F *H2D_MassVsPt = (TH2F*)InputFile->Get("hMassVsPt");
-    TH1F *H1D_MassVsPt_BL = (TH1F*)InputFile_v2->Get("hMpiMass_0_100MeV");
 
     // Projecting a Pt range from the 2D histogram
     // Parameters: name of the projection, first bin, last bin, option
@@ -36,12 +31,6 @@ void Invariant_mass(double ptLow=0.0, double ptHigh=0.099){
     H1D_Mass->GetXaxis()->SetTitleSize(0.08);
     H1D_Mass->GetXaxis()->SetTitleOffset(0.6);
 
-    // H1D_Mass->Scale(1/1000.0);
-
-    // H1D_Mass->Rebin(2);
-    // H1D_Mass->Scale(2);
-
-    // Hide the statistics box
     H1D_Mass ->SetStats(0);
     H1D_Mass->GetXaxis()->SetRangeUser(0.4, 1.3);
 
@@ -56,31 +45,14 @@ void Invariant_mass(double ptLow=0.0, double ptHigh=0.099){
     
     H1D_Mass->SetLineColor(kBlue);
     H1D_Mass->Draw("E1");
-    H1D_MassVsPt_BL->SetMarkerStyle(32);
-    H1D_MassVsPt_BL->Draw("SAME P");
-
-    double data_points = H1D_MassVsPt_BL->GetEntries();
-    double new_data_points = H1D_Mass->GetEntries();
-
-    cout << "ratio: " << new_data_points/data_points << endl;
-
-    vertical_line(0.770);
 
     // pt->Draw();
 
     // Add a legend
-    TLegend *leg = new TLegend(0.7, 0.5, 0.9, 0.9);
-    leg->AddEntry(H1D_Mass,  "UPC Data");
-    leg->AddEntry(H1D_MassVsPt_BL, "UPC Prev Code");
-    // leg->AddEntry(bw_only, "BW only");
-    // leg->AddEntry(poly_only, "BKG only");
-    // leg->SetTextSize(0.08);
+    TLegend *leg = new TLegend(0.47, 0.7, 0.9, 0.9);
+    leg->AddEntry(H1D_Mass,  "Run10 AuAu UPC");
+    leg->SetTextSize(0.06); 
     leg->Draw();
-
-    // Double_t mass = bw->GetParameter("Mass");
-    // Double_t width = bw->GetParameter("Width");
-    // cout << "Fitted Mass: " << mass << " GeV/c^2" << endl;
-    // cout << "Fitted Width: " << width << " GeV/c^2" << endl;
 
     // Save the canvas
     std::ostringstream Image_name;

@@ -14,7 +14,7 @@
 // TODO: Add Boolean function to check all requirements to be a pion
 //
 
-bool check_track(Float_t NSigma_Pion, Float_t NSigma_Kaon);
+bool check_track(Float_t NSigma_Pion, Float_t NSigma_Kaon, Float_t dca);
 
 bool check_pair_of_tracks(float NSigma_Pion_1, float NSigma_Pion_2, float DeltaDeltaTOF, 
                           int Q1, int Q2, float rapidity);
@@ -23,7 +23,7 @@ bool check_event(int Total_Tracks);
 
 float compute_phi(TLorentzVector TrackMomentum_1, TLorentzVector TrackMomentum_2, TLorentzVector TotalTrackMomentum);
 
-void Analysis_Code_v2(const Char_t *outputFile = "/Users/daniel/Documents/Research/BNL/STAR_UPC/output_files/UPC_output.root") {
+void Analysis_Code_v2(const Char_t *outputFile = "/Users/daniel/Research/STAR_UPC/output_files/UPC_output.root") {
 
     TFile *myFile = TFile::Open("./Data/FemtoDst_Run10AuAu_wZDC.root");
     TTreeReader myReader("FemtoDst", myFile);
@@ -70,6 +70,10 @@ void Analysis_Code_v2(const Char_t *outputFile = "/Users/daniel/Documents/Resear
     // Charge signal
     //
     TH1F *hCharge = new TH1F("hCharge", "Charge Distribution", 11, -5.5, 5.5);
+
+    TH1F *hTheta = new TH1F("hTheta", "Angle in #rho's rest frame", 200, 0, 3.14);
+
+    TH1F *hPhi = new TH1F("hPhi", "Transverse Angular Distribution", 400, -3.14, 3.14);
 
     // Variables from Analysis Tree.
     //
@@ -146,6 +150,7 @@ void Analysis_Code_v2(const Char_t *outputFile = "/Users/daniel/Documents/Resear
         // for (size_t iTrack_1 = 0; iTrack_1 < (TotTracks - 1); iTrack_1++) {
         for (size_t iTrack_1 = 0; iTrack_1 < TotTracks; iTrack_1++) {
             if (trackQ[iTrack_1] < 0) continue;
+            if (check_track(trackNSigmaPion[iTrack_1], trackNSigmaKaon[iTrack_1], trackDCA[iTrack_1])) continue;
             TrackMomentum_1.SetPtEtaPhiM(trackPt[iTrack_1], trackEta[iTrack_1], trackPhi[iTrack_1], PionPdgMass);
             hdEdxVsP->Fill(trackQ[iTrack_1]*TrackMomentum_1.P(), trackdEdx[iTrack_1]);
             hCharge->Fill(trackQ[iTrack_1]);
@@ -157,8 +162,7 @@ void Analysis_Code_v2(const Char_t *outputFile = "/Users/daniel/Documents/Resear
             // for (size_t iTrack_2 = iTrack_1 + 1; iTrack_2 < TotTracks; iTrack_2++) {
             for (size_t iTrack_2 = 0; iTrack_2 < TotTracks; iTrack_2++) {
                 if (trackQ[iTrack_2] > 0) continue;
-                int charge1 = static_cast<int>(trackQ[iTrack_1]);
-                int charge2 = static_cast<int>(trackQ[iTrack_2]);
+                if (check_track(trackNSigmaPion[iTrack_2], trackNSigmaKaon[iTrack_2], trackDCA[iTrack_2])) continue;
                 TrackMomentum_2.SetPtEtaPhiM(trackPt[iTrack_2], trackEta[iTrack_2], trackPhi[iTrack_2], PionPdgMass);
                 TotalTrackMomentum = TrackMomentum_1 + TrackMomentum_2;
 
@@ -172,10 +176,25 @@ void Analysis_Code_v2(const Char_t *outputFile = "/Users/daniel/Documents/Resear
                 if (check_pair_of_tracks(trackNSigmaPion[iTrack_1], trackNSigmaPion[iTrack_2], DeltaDeltaTOF,
                       trackQ[iTrack_1], trackQ[iTrack_2], rapidity)) continue;
                 float phi = compute_phi(TrackMomentum_1, TrackMomentum_2, TotalTrackMomentum);
+
+                // Calculate the boost vector (velocity vector of TotalTrackMomentum)
+                TVector3 RhoFrameVector = -TotalTrackMomentum.BoostVector();
+                Polarization = TrackMomentum_1 - TrackMomentum_2;
+                // Apply the boost to TrackMomentum_1
+                Polarization.Boost(RhoFrameVector);
+                TrackMomentum_1.Boost(RhoFrameVector);
+
+                // Calculate the angle theta with the z-axis
+                double theta = std::acos(Polarization.Pz() / Polarization.P());
+
+                double phi_2 = std::atan2(TrackMomentum_1.Py(), TrackMomentum_1.Px());
+
                 SurvivingFraction ++;
                 hMassVsPt->Fill(TotalTrackMomentum.Pt(), TotalTrackMomentum.M());
                 H3D_PhiVsPtVsMass->Fill(phi, TotalTrackMomentum.Pt(), TotalTrackMomentum.M());
                 H3D2Cos2phivsPtvsMass->Fill(2*cos(2*phi), TotalTrackMomentum.Pt(), TotalTrackMomentum.M());
+                hTheta->Fill(theta);
+                hPhi->Fill(phi);
             }
         } // end of track loop
     } // end event loop
@@ -203,6 +222,10 @@ void Analysis_Code_v2(const Char_t *outputFile = "/Users/daniel/Documents/Resear
     hMassVsPt->Write();
 
     H3D_PhiVsPtVsMass->Write();
+
+    hTheta->Write();
+
+    hPhi->Write();
 
     OutputFile->Close();
 }
@@ -235,10 +258,20 @@ bool check_pair_of_tracks(float NSigma_Pion_1, float NSigma_Pion_2, float DeltaD
                           int Q1, int Q2, float rapidity) {
     float NSigmaPion = NSigma_Pion_1*NSigma_Pion_1 + NSigma_Pion_2*NSigma_Pion_2;
     if (NSigmaPion >= 8) return true;
-    else if (abs(NSigma_Pion_1) >=3 || abs(NSigma_Pion_2) >=3) return true;
+    // else if (abs(NSigma_Pion_1) >=3 || abs(NSigma_Pion_2) >=3) return true;
     else if (DeltaDeltaTOF >= 0.750 ||  DeltaDeltaTOF <= 0.) return true;
     else if (Q1*Q2 == 1) return true;
     else if (rapidity >= 1) return true;
+    else return false;
+}
+
+bool check_track(Float_t NSigma_Pion, Float_t NSigma_Kaon, Float_t dca) {
+    // Check single track NSigma pion and NSigma Kaon
+    //
+    if (abs(NSigma_Pion) > 2.0 || abs(NSigma_Kaon) < 2.0) return true;
+
+    else if (abs(dca) > 1) return true;
+
     else return false;
 }
 
